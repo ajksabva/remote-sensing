@@ -1,5 +1,4 @@
-dataset_type = 'MASATIv2Dataset'
-data_root = '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/'
+data_root = '/data/MASATI-v2/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
@@ -49,14 +48,10 @@ data = dict(
     workers_per_gpu=32,
     train=dict(
         type='MASATIv2Dataset',
-        ann_file=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/ImageSets/trainval.txt',
-        ann_subdir=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/FullDataSet/Annotations/',
-        img_subdir=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/FullDataSet/AllImages/',
-        img_prefix=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/FullDataSet/AllImages/',
+        ann_file= data_root + 'ImageSets/trainval.txt',
+        ann_subdir= data_root + 'FullDataSet/Annotations/',
+        img_subdir= data_root + 'FullDataSet/AllImages/',
+        img_prefix= data_root + 'FullDataSet/AllImages/',
         filter_imgs=True,
         pipeline=[
             dict(type='LoadImageFromFile'),
@@ -85,14 +80,10 @@ data = dict(
         version='le90'),
     val=dict(
         type='MASATIv2Dataset',
-        ann_file=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/ImageSets/test.txt',
-        ann_subdir=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/FullDataSet/Annotations/',
-        img_subdir=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/FullDataSet/AllImages/',
-        img_prefix=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/FullDataSet/AllImages/',
+        ann_file= data_root + 'ImageSets/test.txt',
+        ann_subdir= data_root + 'FullDataSet/Annotations/',
+        img_subdir= data_root + 'FullDataSet/AllImages/',
+        img_prefix= data_root + 'FullDataSet/AllImages/',
         filter_imgs=True,
         pipeline=[
             dict(type='LoadImageFromFile'),
@@ -115,14 +106,10 @@ data = dict(
         version='le90'),
     test=dict(
         type='MASATIv2Dataset',
-        ann_file=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/ImageSets/test.txt',
-        ann_subdir=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/FullDataSet/Annotations/',
-        img_subdir=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/FullDataSet/AllImages/',
-        img_prefix=
-        '/root/yrz/Large-Selective-Kernel-Network/data/MASATI-v2-hrsc/FullDataSet/AllImages/',
+        ann_file= data_root + 'ImageSets/test.txt',
+        ann_subdir= data_root + 'FullDataSet/Annotations/',
+        img_subdir= data_root + 'FullDataSet/AllImages/',
+        img_prefix= data_root + 'FullDataSet/AllImages/',
         filter_imgs=True,
         pipeline=[
             dict(type='LoadImageFromFile'),
@@ -158,7 +145,7 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=0.3333333333333333,
     step=[24, 33])
-runner = dict(type='EpochBasedRunner', max_epochs=108)
+runner = dict(type='EpochBasedRunner', max_epochs=42)
 checkpoint_config = dict(interval=1)
 log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
 dist_params = dict(backend='nccl')
