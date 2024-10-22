@@ -122,23 +122,19 @@ class MASATIv2Dataset(CustomDataset):
             metric='mAP',
             logger=None,
             proposal_nums=(100, 300, 1000),
-            iou_thrs=[0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95],
+            iou_thrs=[0.5],
             scale_ranges=None,
             use_07_metric=True,
             nproc=4
     ):
         
-        # 忽略了metric
-
         annotations = [self.get_ann_info(i) for i in range(len(self))]
-        eval_results = OrderedDict()
         assert isinstance(iou_thrs, list)
 
-        # mAP
-        mean_aps = []
+        
         for iou_thr in iou_thrs:
             print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
-            mean_ap, _ = eval_rbbox_map(
+            eval_rbbox_map(
                 results,
                 annotations,
                 scale_ranges=scale_ranges,
@@ -146,10 +142,5 @@ class MASATIv2Dataset(CustomDataset):
                 use_07_metric=use_07_metric,
                 nproc=nproc
             )
-            mean_aps.append(mean_ap)
-            eval_results[f'AP{int(iou_thr*100):02d}'] = round(mean_ap, 3)
-        eval_results['mAP'] = sum(mean_aps) / len(mean_aps)
-        eval_results.move_to_end('mAP', last=False)
-        return eval_results
-
+            
 

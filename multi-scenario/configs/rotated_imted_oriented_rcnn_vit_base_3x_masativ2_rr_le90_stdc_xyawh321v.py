@@ -1,4 +1,6 @@
 data_root = './data/MASATI-v2/'
+pretrained = 'data/models/mae_pretrain_vit_base_full.pth'
+
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
@@ -155,7 +157,7 @@ resume_from = None
 workflow = [('train', 1)]
 opencv_num_threads = 0
 mp_start_method = 'fork'
-pretrained = 'data/pretrained/mae_pretrain_vit_base_full.pth'
+
 angle_version = 'le90'
 norm_cfg = dict(type='LN', requires_grad=True)
 model = dict(
@@ -165,7 +167,7 @@ model = dict(
         type='VisionTransformer',
         init_cfg=dict(
             type='Pretrained',
-            checkpoint='data/pretrained/mae_pretrain_vit_base_full.pth'),
+            checkpoint=pretrained),
         img_size=224,
         patch_size=16,
         embed_dim=768,
@@ -232,7 +234,7 @@ model = dict(
             type='RotatedMAEBBoxHeadSTDC',
             init_cfg=dict(
                 type='Pretrained',
-                checkpoint='data/pretrained/mae_pretrain_vit_base_full.pth'),
+                checkpoint=pretrained),
             use_checkpoint=False,
             in_channels=768,
             img_size=224,

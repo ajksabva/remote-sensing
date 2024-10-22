@@ -219,7 +219,8 @@ def eval_rbbox_map(det_results,
             precision = precisions[-1]
             recall = recalls[-1]
             f1 = 2 *(precision * recall) / (precision + recall)
-            print_log(f'precision {precision:.3f} recall {recall:.3f} f1 {f1:.3f}')
+        else:
+            f1 = 0
         
         
         eval_results.append({
@@ -227,6 +228,7 @@ def eval_rbbox_map(det_results,
             'num_dets': num_dets,
             'recall': recalls,
             'precision': precisions,
+            'f1': f1,
             'ap': ap
         })
     pool.close()
@@ -287,12 +289,14 @@ def print_map_summary(mean_ap,
     num_classes = len(results)
 
     recalls = np.zeros((num_scales, num_classes), dtype=np.float32)
+    f1s = np.zeros((num_scales, num_classes), dtype=np.float32)
     aps = np.zeros((num_scales, num_classes), dtype=np.float32)
     num_gts = np.zeros((num_scales, num_classes), dtype=int)
     for i, cls_result in enumerate(results):
         if cls_result['recall'].size > 0:
             recalls[:, i] = np.array(cls_result['recall'], ndmin=2)[:, -1]
         aps[:, i] = cls_result['ap']
+        f1s[:, i] = cls_result['f1']
         num_gts[:, i] = cls_result['num_gts']
 
     if dataset is None:
@@ -303,7 +307,7 @@ def print_map_summary(mean_ap,
     if not isinstance(mean_ap, list):
         mean_ap = [mean_ap]
 
-    header = ['class', 'gts', 'dets', 'recall', 'ap']
+    header = ['class', 'gts', 'dets', 'recall', 'f1', 'ap']
     for i in range(num_scales):
         if scale_ranges is not None:
             print_log(f'Scale range {scale_ranges[i]}', logger=logger)
@@ -311,10 +315,10 @@ def print_map_summary(mean_ap,
         for j in range(num_classes):
             row_data = [
                 label_names[j], num_gts[i, j], results[j]['num_dets'],
-                f'{recalls[i, j]:.3f}', f'{aps[i, j]:.3f}'
+                f'{recalls[i, j]:.3f}', f'{f1s[i,j]:.3f}', f'{aps[i, j]:.3f}'
             ]
             table_data.append(row_data)
-        table_data.append(['mAP', '', '', '', f'{mean_ap[i]:.3f}'])
+        table_data.append(['mAP', '', '', '', '', f'{mean_ap[i]:.3f}'])
         table = AsciiTable(table_data)
         table.inner_footing_row_border = True
         print_log('\n' + table.table, logger=logger)
