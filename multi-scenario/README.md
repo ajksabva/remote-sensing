@@ -23,7 +23,7 @@
 git clone git@github.com:ajksabva/remote-sensing.git
 cd remote-sensing
 chmod +x ./prepare_data.sh
-sh ./prepare_data,sh
+sh ./prepare_data.sh
 
 # 多场景
 conda create -n multi-scenario python==3.7.12 -y
