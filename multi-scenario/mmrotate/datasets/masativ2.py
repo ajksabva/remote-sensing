@@ -131,10 +131,11 @@ class MASATIv2Dataset(CustomDataset):
         annotations = [self.get_ann_info(i) for i in range(len(self))]
         assert isinstance(iou_thrs, list)
 
-        
+        mean_aps = []
+        eval_results = OrderedDict()
         for iou_thr in iou_thrs:
             print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
-            eval_rbbox_map(
+            mean_ap, _ = eval_rbbox_map(
                 results,
                 annotations,
                 scale_ranges=scale_ranges,
@@ -142,5 +143,10 @@ class MASATIv2Dataset(CustomDataset):
                 use_07_metric=use_07_metric,
                 nproc=nproc
             )
+            mean_aps.append(mean_ap)
+            eval_results[f'AP{int(iou_thr*100):02d}'] = round(mean_ap, 3)
+        eval_results['mAP'] = sum(mean_aps) / len(mean_aps)
+        eval_results.move_to_end('mAP', last=False)
+        return eval_results
             
 
