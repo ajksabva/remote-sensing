@@ -1,4 +1,4 @@
-### 环境配置
+### 1. 环境配置
 
 #### 硬件配置
 
@@ -49,7 +49,7 @@ pip install -e .
 
 
 
-### 测试与使用
+### 2. 测试与使用
 
 #### 训练
 
@@ -71,4 +71,3 @@ data/models/multi-scenario.pth \
 --work-dir your_work_dir \ # 保存日志文件路径
 --show-dir your_show_dir   # 预测图片输出路径
 ```
-
