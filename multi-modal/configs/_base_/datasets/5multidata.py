@@ -1,6 +1,6 @@
 # dataset settings
 dataset_type = 'MultidataDataset'
-data_root = '/root/wls/data/' #your data_root
+data_root = '' #your data_root
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
@@ -35,10 +35,10 @@ data = dict(
         datasets=[
             dict(
                 type='HRSCDataset',
-                ann_file=data_root + 'RGB/hrsc/' + 'ImageSets/trainval.txt',
-                ann_subdir=data_root + 'RGB/hrsc/' + 'FullDataSet/Annotations/',
-                img_subdir=data_root + 'RGB/hrsc/' + 'FullDataSet/AllImages/',
-                img_prefix=data_root + 'RGB/hrsc/' + 'FullDataSet/AllImages/',
+                ann_file=data_root + 'RGB/HRSC2016/' + 'ImageSets/trainval.txt',
+                ann_subdir=data_root + 'RGB/HRSC2016/' + 'FullDataSet/Annotations/',
+                img_subdir=data_root + 'RGB/HRSC2016/' + 'FullDataSet/AllImages/',
+                img_prefix=data_root + 'RGB/HRSC2016/' + 'FullDataSet/AllImages/',
                 pipeline=train_pipeline
             ),
             dict(
@@ -51,31 +51,31 @@ data = dict(
             ),
             dict(
                 type='SSDDDataset',
-                ann_file=data_root + 'sar/SSDD/' + 'ImageSets/train.txt',
-                ann_subdir=data_root + 'sar/SSDD/' + 'FullDataSet/Annotations/', 
-                img_subdir=data_root + 'sar/SSDD/' + 'FullDataSet/JPEGImages/', 
-                img_prefix=data_root + 'sar/SSDD/' + 'FullDataSet/JPEGImages/',
+                ann_file=data_root + 'SAR/SSDD/' + 'ImageSets/train.txt',
+                ann_subdir=data_root + 'SAR/SSDD/' + 'FullDataSet/Annotations/', 
+                img_subdir=data_root + 'SAR/SSDD/' + 'FullDataSet/JPEGImages/', 
+                img_prefix=data_root + 'SAR/SSDD/' + 'FullDataSet/JPEGImages/',
                 pipeline=train_pipeline),
             dict(
                 type='HSIDataset',
-                ann_file=data_root + 'Hsi/' + 'ImageSets/trainval.txt',  
-                ann_subdir=data_root + 'Hsi/' + 'FullDataSet/Annotations/', 
-                img_subdir=data_root + 'Hsi/' + 'FullDataSet/AllImages/', 
-                img_prefix=data_root + 'Hsi/' + 'FullDataSet/AllImages/', 
+                ann_file=data_root + 'Hyperspectral/Hsi/' + 'ImageSets/trainval.txt',  
+                ann_subdir=data_root + 'Hyperspectral/Hsi/' + 'FullDataSet/Annotations/', 
+                img_subdir=data_root + 'Hyperspectral/Hsi/' + 'FullDataSet/AllImages/', 
+                img_prefix=data_root + 'Hyperspectral/Hsi/' + 'FullDataSet/AllImages/', 
                 pipeline=train_pipeline),
             dict(
                 type='MMshipRGBDataset',
-                ann_file=data_root + 'multispectral/MSShip/small-scale/' + 'ImageSets/train.txt',
-                ann_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/Annotations/', 
-                img_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/RGB/', 
-                img_prefix=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/RGB/',
+                ann_file=data_root + 'Multispectral/MMShip/' + 'ImageSets/train.txt',
+                ann_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/Annotations/', 
+                img_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/RGB/', 
+                img_prefix=data_root + 'Multispectral/MMShip/' + 'FullDataSet/RGB/',
                 pipeline=train_pipeline),
             dict(
                 type='MMshipNIRDataset',
-                ann_file=data_root + 'multispectral/MSShip/small-scale/' + 'ImageSets/train.txt',
-                ann_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/Annotations/', 
-                img_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/NIR/', 
-                img_prefix=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/NIR/',
+                ann_file=data_root + 'Multispectral/MMShip/' + 'ImageSets/train.txt',
+                ann_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/Annotations/', 
+                img_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/NIR/', 
+                img_prefix=data_root + 'Multispectral/MMShip/' + 'FullDataSet/NIR/',
                 pipeline=train_pipeline),
         ]
     ),
@@ -84,10 +84,10 @@ data = dict(
         datasets=[
             dict(
                 type='HRSCDataset',
-                ann_file=data_root + 'RGB/hrsc/' + 'ImageSets/test.txt',
-                ann_subdir=data_root + 'RGB/hrsc/' + 'FullDataSet/Annotations/',
-                img_subdir=data_root + 'RGB/hrsc/' + 'FullDataSet/AllImages/',
-                img_prefix=data_root + 'RGB/hrsc/' + 'FullDataSet/AllImages/',
+                ann_file=data_root + 'RGB/HRSC2016/' + 'ImageSets/test.txt',
+                ann_subdir=data_root + 'RGB/HRSC2016/' + 'FullDataSet/Annotations/',
+                img_subdir=data_root + 'RGB/HRSC2016/' + 'FullDataSet/AllImages/',
+                img_prefix=data_root + 'RGB/HRSC2016/' + 'FullDataSet/AllImages/',
                 pipeline=test_pipeline
             ),
             dict(
@@ -100,31 +100,31 @@ data = dict(
             ),
             dict(
                 type='SSDDDataset',
-                ann_file=data_root + 'sar/SSDD/' + 'ImageSets/test.txt',
-                ann_subdir=data_root + 'sar/SSDD/' + 'FullDataSet/Annotations/', 
-                img_subdir=data_root + 'sar/SSDD/' + 'FullDataSet/JPEGImages/', 
-                img_prefix=data_root + 'sar/SSDD/' + 'FullDataSet/JPEGImages/',
+                ann_file=data_root + 'SAR/SSDD/' + 'ImageSets/test.txt',
+                ann_subdir=data_root + 'SAR/SSDD/' + 'FullDataSet/Annotations/', 
+                img_subdir=data_root + 'SAR/SSDD/' + 'FullDataSet/JPEGImages/', 
+                img_prefix=data_root + 'SAR/SSDD/' + 'FullDataSet/JPEGImages/',
                 pipeline=test_pipeline),
             dict(
                 type='HSIDataset',
-                ann_file=data_root + 'Hsi/' + 'ImageSets/test.txt',
-                ann_subdir=data_root + 'Hsi/' + 'FullDataSet/Annotations/',
-                img_subdir=data_root + 'Hsi/' + 'FullDataSet/AllImages/',
-                img_prefix=data_root + 'Hsi/' + 'FullDataSet/AllImages/',
+                ann_file=data_root + 'Hyperspectral/Hsi/' + 'ImageSets/test.txt',
+                ann_subdir=data_root + 'Hyperspectral/Hsi/' + 'FullDataSet/Annotations/',
+                img_subdir=data_root + 'Hyperspectral/Hsi/' + 'FullDataSet/AllImages/',
+                img_prefix=data_root + 'Hyperspectral/Hsi/' + 'FullDataSet/AllImages/',
                 pipeline=test_pipeline),
             dict(
                 type='MMshipRGBDataset',
-                ann_file=data_root + 'multispectral/MSShip/small-scale/' + 'ImageSets/val.txt',
-                ann_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/Annotations/', 
-                img_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/RGB/', 
-                img_prefix=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/RGB/',
+                ann_file=data_root + 'Multispectral/MMShip/' + 'ImageSets/val.txt',
+                ann_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/Annotations/', 
+                img_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/RGB/', 
+                img_prefix=data_root + 'Multispectral/MMShip/' + 'FullDataSet/RGB/',
                 pipeline=test_pipeline),
             dict(
                 type='MMshipNIRDataset',
-                ann_file=data_root + 'multispectral/MSShip/small-scale/' + 'ImageSets/val.txt',
-                ann_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/Annotations/', 
-                img_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/NIR/', 
-                img_prefix=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/NIR/',
+                ann_file=data_root + 'Multispectral/MMShip/' + 'ImageSets/val.txt',
+                ann_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/Annotations/', 
+                img_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/NIR/', 
+                img_prefix=data_root + 'Multispectral/MMShip/' + 'FullDataSet/NIR/',
                 pipeline=test_pipeline),
         ]
     ),
@@ -133,10 +133,10 @@ data = dict(
         datasets=[
             dict(
                 type='HRSCDataset',
-                ann_file=data_root + 'RGB/hrsc/' + 'ImageSets/test.txt',
-                ann_subdir=data_root + 'RGB/hrsc/' + 'FullDataSet/Annotations/',
-                img_subdir=data_root + 'RGB/hrsc/' + 'FullDataSet/AllImages/',
-                img_prefix=data_root + 'RGB/hrsc/' + 'FullDataSet/AllImages/',
+                ann_file=data_root + 'RGB/HRSC2016/' + 'ImageSets/test.txt',
+                ann_subdir=data_root + 'RGB/HRSC2016/' + 'FullDataSet/Annotations/',
+                img_subdir=data_root + 'RGB/HRSC2016/' + 'FullDataSet/AllImages/',
+                img_prefix=data_root + 'RGB/HRSC2016/' + 'FullDataSet/AllImages/',
                 pipeline=test_pipeline
             ),
             dict(
@@ -149,31 +149,31 @@ data = dict(
             ),
             dict(
                 type='SSDDDataset',
-                ann_file=data_root + 'sar/SSDD/' + 'ImageSets/test.txt',
-                ann_subdir=data_root + 'sar/SSDD/' + 'FullDataSet/Annotations/', 
-                img_subdir=data_root + 'sar/SSDD/' + 'FullDataSet/JPEGImages/', 
-                img_prefix=data_root + 'sar/SSDD/' + 'FullDataSet/JPEGImages/',
+                ann_file=data_root + 'SAR/SSDD/' + 'ImageSets/test.txt',
+                ann_subdir=data_root + 'SAR/SSDD/' + 'FullDataSet/Annotations/', 
+                img_subdir=data_root + 'SAR/SSDD/' + 'FullDataSet/JPEGImages/', 
+                img_prefix=data_root + 'SAR/SSDD/' + 'FullDataSet/JPEGImages/',
                 pipeline=test_pipeline),
             dict(
                 type='HSIDataset',
-                ann_file=data_root + 'Hsi/' + 'ImageSets/test.txt',
-                ann_subdir=data_root + 'Hsi/' + 'FullDataSet/Annotations/',
-                img_subdir=data_root + 'Hsi/' + 'FullDataSet/AllImages/',
-                img_prefix=data_root + 'Hsi/' + 'FullDataSet/AllImages/',
+                ann_file=data_root + 'Hyperspectral/Hsi/' + 'ImageSets/test.txt',
+                ann_subdir=data_root + 'Hyperspectral/Hsi/' + 'FullDataSet/Annotations/',
+                img_subdir=data_root + 'Hyperspectral/Hsi/' + 'FullDataSet/AllImages/',
+                img_prefix=data_root + 'Hyperspectral/Hsi/' + 'FullDataSet/AllImages/',
                 pipeline=test_pipeline),
             dict(
                 type='MMshipRGBDataset',
-                ann_file=data_root + 'multispectral/MSShip/small-scale/' + 'ImageSets/test.txt',
-                ann_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/Annotations/', 
-                img_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/RGB/', 
-                img_prefix=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/RGB/',
+                ann_file=data_root + 'Multispectral/MMShip/' + 'ImageSets/test.txt',
+                ann_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/Annotations/', 
+                img_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/RGB/', 
+                img_prefix=data_root + 'Multispectral/MMShip/' + 'FullDataSet/RGB/',
                 pipeline=test_pipeline),
             dict(
                 type='MMshipNIRDataset',
-                ann_file=data_root + 'multispectral/MSShip/small-scale/' + 'ImageSets/test.txt',
-                ann_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/Annotations/', 
-                img_subdir=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/NIR/', 
-                img_prefix=data_root + 'multispectral/MSShip/small-scale/' + 'FullDataSet/NIR/',
+                ann_file=data_root + 'Multispectral/MMShip/' + 'ImageSets/test.txt',
+                ann_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/Annotations/', 
+                img_subdir=data_root + 'Multispectral/MMShip/' + 'FullDataSet/NIR/', 
+                img_prefix=data_root + 'Multispectral/MMShip/' + 'FullDataSet/NIR/',
                 pipeline=test_pipeline),
         ]
     ),
