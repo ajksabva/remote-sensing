@@ -1,7 +1,7 @@
 #! /bin/bash
 
 
-MULTI_SCENARIO_DIR='./multi-scenario/data/'
+MULTI_SCENARIO_DIR='./data/'
 
 wget -P $MULTI_SCENARIO_DIR'models/' 'https://github.com/ajksabva/remote-sensing/releases/download/v1.0.0-multi-scenario/mae_pretrain_vit_base_full.pth'
 
