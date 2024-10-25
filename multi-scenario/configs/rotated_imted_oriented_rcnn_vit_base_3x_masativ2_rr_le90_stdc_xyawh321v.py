@@ -309,7 +309,7 @@ model = dict(
         rcnn=dict(
             nms_pre=2000,
             min_bbox_size=0,
-            score_thr=0.6,
+            score_thr=0.65,
             nms=dict(iou_thr=0.1),
             max_per_img=2000)))
 fp16 = dict(loss_scale=dict(init_scale=512))
