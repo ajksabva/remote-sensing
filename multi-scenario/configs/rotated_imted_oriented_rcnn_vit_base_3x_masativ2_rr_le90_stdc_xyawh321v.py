@@ -5,27 +5,13 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='LoadAnnotationsWithScenario', with_bbox=True),
     dict(type='RResize', img_scale=(800, 800)),
-    dict(
-        type='RRandomFlip',
-        flip_ratio=[0.25, 0.25, 0.25],
-        direction=['horizontal', 'vertical', 'diagonal'],
-        version='le90'),
-    dict(
-        type='PolyRandomRotate',
-        rotate_ratio=0.5,
-        angles_range=180,
-        auto_bound=False,
-        version='le90'),
-    dict(
-        type='Normalize',
-        mean=[123.675, 116.28, 103.53],
-        std=[58.395, 57.12, 57.375],
-        to_rgb=True),
+    dict(type='RRandomFlip', flip_ratio=0.5),
+    dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+    dict(type='Collect', keys=['img', 'scenario', 'gt_bboxes', 'gt_labels'])
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -35,11 +21,7 @@ test_pipeline = [
         flip=False,
         transforms=[
             dict(type='RResize'),
-            dict(
-                type='Normalize',
-                mean=[123.675, 116.28, 103.53],
-                std=[58.395, 57.12, 57.375],
-                to_rgb=True),
+            dict(type='Normalize', **img_norm_cfg),
             dict(type='Pad', size_divisor=32),
             dict(type='DefaultFormatBundle'),
             dict(type='Collect', keys=['img'])
@@ -55,30 +37,7 @@ data = dict(
         img_subdir= data_root + 'FullDataSet/AllImages/',
         img_prefix= data_root + 'FullDataSet/AllImages/',
         filter_imgs=True,
-        pipeline=[
-            dict(type='LoadImageFromFile'),
-            dict(type='LoadAnnotations', with_bbox=True),
-            dict(type='RResize', img_scale=(800, 800)),
-            dict(
-                type='RRandomFlip',
-                flip_ratio=[0.25, 0.25, 0.25],
-                direction=['horizontal', 'vertical', 'diagonal'],
-                version='le90'),
-            dict(
-                type='PolyRandomRotate',
-                rotate_ratio=0.5,
-                angles_range=180,
-                auto_bound=False,
-                version='le90'),
-            dict(
-                type='Normalize',
-                mean=[123.675, 116.28, 103.53],
-                std=[58.395, 57.12, 57.375],
-                to_rgb=True),
-            dict(type='Pad', size_divisor=32),
-            dict(type='DefaultFormatBundle'),
-            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
-        ],
+        pipeline=train_pipeline,
         version='le90'),
     val=dict(
         type='MASATIv2Dataset',
@@ -87,24 +46,7 @@ data = dict(
         img_subdir= data_root + 'FullDataSet/AllImages/',
         img_prefix= data_root + 'FullDataSet/AllImages/',
         filter_imgs=True,
-        pipeline=[
-            dict(type='LoadImageFromFile'),
-            dict(
-                type='MultiScaleFlipAug',
-                img_scale=(800, 800),
-                flip=False,
-                transforms=[
-                    dict(type='RResize'),
-                    dict(
-                        type='Normalize',
-                        mean=[123.675, 116.28, 103.53],
-                        std=[58.395, 57.12, 57.375],
-                        to_rgb=True),
-                    dict(type='Pad', size_divisor=32),
-                    dict(type='DefaultFormatBundle'),
-                    dict(type='Collect', keys=['img'])
-                ])
-        ],
+        pipeline=test_pipeline,
         version='le90'),
     test=dict(
         type='MASATIv2Dataset',
@@ -113,24 +55,7 @@ data = dict(
         img_subdir= data_root + 'FullDataSet/AllImages/',
         img_prefix= data_root + 'FullDataSet/AllImages/',
         filter_imgs=True,
-        pipeline=[
-            dict(type='LoadImageFromFile'),
-            dict(
-                type='MultiScaleFlipAug',
-                img_scale=(800, 800),
-                flip=False,
-                transforms=[
-                    dict(type='RResize'),
-                    dict(
-                        type='Normalize',
-                        mean=[123.675, 116.28, 103.53],
-                        std=[58.395, 57.12, 57.375],
-                        to_rgb=True),
-                    dict(type='Pad', size_divisor=32),
-                    dict(type='DefaultFormatBundle'),
-                    dict(type='Collect', keys=['img'])
-                ])
-        ],
+        pipeline=test_pipeline,
         version='le90'))
 evaluation = dict(interval=3, metric='mAP')
 optimizer = dict(
@@ -147,7 +72,7 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=0.3333333333333333,
     step=[24, 33])
-runner = dict(type='EpochBasedRunner', max_epochs=42)
+runner = dict(type='EpochBasedRunner', max_epochs=36)
 checkpoint_config = dict(interval=1)
 log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
 dist_params = dict(backend='nccl')
@@ -176,6 +101,7 @@ model = dict(
         mlp_ratio=4.0,
         qkv_bias=True,
         drop_path_rate=0.2,
+        num_classes=2,
         learnable_pos_embed=True,
         use_checkpoint=False,
         with_simple_fpn=True,
@@ -187,6 +113,13 @@ model = dict(
         norm_cfg=dict(type='LN', requires_grad=True),
         use_residual=False,
         num_outs=5),
+    classifier=dict(
+        type='SimpleClassifier',
+        num_classes=3,
+        in_channel=768,
+        features_dim=256,
+        loss_cls=dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.01)
+    ),
     rpn_head=dict(
         type='OrientedRPNHead',
         in_channels=256,
@@ -309,7 +242,7 @@ model = dict(
         rcnn=dict(
             nms_pre=2000,
             min_bbox_size=0,
-            score_thr=0.65,
+            score_thr=0.05,
             nms=dict(iou_thr=0.1),
             max_per_img=2000)))
 fp16 = dict(loss_scale=dict(init_scale=512))

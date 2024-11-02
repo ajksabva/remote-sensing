@@ -10,6 +10,7 @@ ROTATED_ROI_EXTRACTORS = MODELS
 ROTATED_HEADS = MODELS
 ROTATED_NECKS = MODELS
 ROTATED_SHARED_HEADS = MODELS
+ROTATED_CLASSIFIER = MODELS
 
 
 def build_backbone(cfg):
@@ -54,3 +55,6 @@ def build_detector(cfg, train_cfg=None, test_cfg=None):
         'test_cfg specified in both outer field and model field '
     return ROTATED_DETECTORS.build(
         cfg, default_args=dict(train_cfg=train_cfg, test_cfg=test_cfg))
+
+def build_img_classifier(cfg):
+    return ROTATED_CLASSIFIER.build(cfg)

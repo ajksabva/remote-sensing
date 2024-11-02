@@ -3,6 +3,7 @@
 from ..builder import ROTATED_DETECTORS
 from .two_stage import RotatedTwoStageDetector
 import torch
+import numpy as np
 
 
 @ROTATED_DETECTORS.register_module()
@@ -11,6 +12,7 @@ class RotatedimTED(RotatedTwoStageDetector):
 
     def __init__(self,
                  backbone,
+                 classifier,
                  rpn_head,
                  roi_head,
                  train_cfg,
@@ -23,6 +25,7 @@ class RotatedimTED(RotatedTwoStageDetector):
         super(RotatedimTED, self).__init__(
             backbone=backbone,
             neck=neck,
+            classifier=classifier,
             rpn_head=rpn_head,
             roi_head=roi_head,
             train_cfg=train_cfg,
@@ -65,6 +68,7 @@ class RotatedimTED(RotatedTwoStageDetector):
     def forward_train(self,
                       img,
                       img_metas,
+                      scenario,
                       gt_bboxes,
                       gt_labels,
                       gt_bboxes_ignore=None,
@@ -100,53 +104,59 @@ class RotatedimTED(RotatedTwoStageDetector):
             dict[str, Tensor]: a dictionary of loss components
         """
         x = self.extract_feat(img)
-        if len(x) == 2:
-            x, vit_feat = x[0], x[1]
-            losses = dict()
-            # RPN forward and loss
-            if self.with_rpn:
-                proposal_cfg = self.train_cfg.get('rpn_proposal',
-                                                  self.test_cfg.rpn)
-                rpn_losses, proposal_list = self.rpn_head.forward_train(
-                    x,
-                    img_metas,
-                    gt_bboxes,
-                    gt_labels=None,
-                    gt_bboxes_ignore=gt_bboxes_ignore,
-                    proposal_cfg=proposal_cfg)
-                losses.update(rpn_losses)
-            else:
-                proposal_list = proposals
+        # if len(x) == 2:
+        x, vit_feat = x[0], x[1]
+        losses = dict()
 
-            roi_losses = self.roi_head.forward_train(self.get_roi_feat(x, vit_feat), img_metas, proposal_list,
-                                                     gt_bboxes, gt_labels,
-                                                     gt_bboxes_ignore, gt_masks,
-                                                     **kwargs)
-            losses.update(roi_losses)
-            return losses
+        # img classify
+        scenario_loss = self.classifier.forward_train(vit_feat, scenario)
+        losses.update(scenario_loss)
+
+
+        # RPN forward and loss
+        if self.with_rpn:
+            proposal_cfg = self.train_cfg.get('rpn_proposal',
+                                                self.test_cfg.rpn)
+            rpn_losses, proposal_list = self.rpn_head.forward_train(
+                x,
+                img_metas,
+                gt_bboxes,
+                gt_labels=None,
+                gt_bboxes_ignore=gt_bboxes_ignore,
+                proposal_cfg=proposal_cfg)
+            losses.update(rpn_losses)
         else:
-            losses = dict()
-            # RPN forward and loss
-            if self.with_rpn:
-                proposal_cfg = self.train_cfg.get('rpn_proposal',
-                                                  self.test_cfg.rpn)
-                rpn_losses, proposal_list = self.rpn_head.forward_train(
-                    x,
-                    img_metas,
-                    gt_bboxes,
-                    gt_labels=None,
-                    gt_bboxes_ignore=gt_bboxes_ignore,
-                    proposal_cfg=proposal_cfg)
-                losses.update(rpn_losses)
-            else:
-                proposal_list = proposals
+            proposal_list = proposals
 
-            roi_losses = self.roi_head.forward_train(x, img_metas, proposal_list,
-                                                     gt_bboxes, gt_labels,
-                                                     gt_bboxes_ignore, gt_masks,
-                                                     **kwargs)
-            losses.update(roi_losses)
-            return losses
+        roi_losses = self.roi_head.forward_train(self.get_roi_feat(x, vit_feat), img_metas, proposal_list,
+                                                    gt_bboxes, gt_labels,
+                                                    gt_bboxes_ignore, gt_masks,
+                                                    **kwargs)
+        losses.update(roi_losses)
+        return losses
+        # else:
+        #     losses = dict()
+        #     # RPN forward and loss
+        #     if self.with_rpn:
+        #         proposal_cfg = self.train_cfg.get('rpn_proposal',
+        #                                           self.test_cfg.rpn)
+        #         rpn_losses, proposal_list = self.rpn_head.forward_train(
+        #             x,
+        #             img_metas,
+        #             gt_bboxes,
+        #             gt_labels=None,
+        #             gt_bboxes_ignore=gt_bboxes_ignore,
+        #             proposal_cfg=proposal_cfg)
+        #         losses.update(rpn_losses)
+        #     else:
+        #         proposal_list = proposals
+
+        #     roi_losses = self.roi_head.forward_train(x, img_metas, proposal_list,
+        #                                              gt_bboxes, gt_labels,
+        #                                              gt_bboxes_ignore, gt_masks,
+        #                                              **kwargs)
+        #     losses.update(roi_losses)
+            # return losses
 
     def forward_dummy(self, img):
         """Used for computing network flops.
@@ -199,27 +209,34 @@ class RotatedimTED(RotatedTwoStageDetector):
             if torch.onnx.is_in_onnx_export():
                 img_shape = torch._shape_as_tensor(img)[2:]
                 img_metas[0]['img_shape_for_onnx'] = img_shape
-
+            
+            scenario_cls = self.classifier.simple_test(vit_feat)
             if proposals is None:
                 proposal_list = self.rpn_head.simple_test_rpn(x, img_metas)
             else:
                 proposal_list = proposals
 
-            return self.roi_head.simple_test(
+            roi_outs = self.roi_head.simple_test(
                 self.get_roi_feat(x, vit_feat), proposal_list, img_metas, rescale=rescale)
-        else:
-            # get origin input shape to onnx dynamic input shape
-            if torch.onnx.is_in_onnx_export():
-                img_shape = torch._shape_as_tensor(img)[2:]
-                img_metas[0]['img_shape_for_onnx'] = img_shape
+            
 
-            if proposals is None:
-                proposal_list = self.rpn_head.simple_test_rpn(x, img_metas)
-            else:
-                proposal_list = proposals
+            predict_scenario_idx = scenario_cls.argmax(dim=1).cpu().numpy()
+               
+            return predict_scenario_idx, roi_outs
 
-            return self.roi_head.simple_test(
-                x, proposal_list, img_metas, rescale=rescale)
+        # else:
+        #     # get origin input shape to onnx dynamic input shape
+        #     if torch.onnx.is_in_onnx_export():
+        #         img_shape = torch._shape_as_tensor(img)[2:]
+        #         img_metas[0]['img_shape_for_onnx'] = img_shape
+
+        #     if proposals is None:
+        #         proposal_list = self.rpn_head.simple_test_rpn(x, img_metas)
+        #     else:
+        #         proposal_list = proposals
+
+        #     return self.roi_head.simple_test(
+        #         x, proposal_list, img_metas, rescale=rescale)
 
     def aug_test(self, imgs, img_metas, rescale=False):
         """Test with augmentations.
@@ -228,3 +245,9 @@ class RotatedimTED(RotatedTwoStageDetector):
         of imgs[0].
         """
         raise NotImplementedError
+    
+
+    # def show_result(self, img, result, score_thr=0.3, bbox_color=..., text_color=..., mask_color=None, thickness=2, font_size=13, win_name='', show=False, wait_time=0, out_file=None, **kwargs):
+    #     result = result[:, 0:-1]
+    #     return super().show_result(img, result, score_thr, bbox_color, text_color, mask_color, thickness, font_size, win_name, show, wait_time, out_file, **kwargs)
+    

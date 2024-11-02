@@ -323,3 +323,32 @@ def print_map_summary(mean_ap,
         table = AsciiTable(table_data)
         table.inner_footing_row_border = True
         print_log('\n' + table.table, logger=logger)
+
+def eval_scenario(results, annotations, classes):
+    assert len(results) == len(annotations)
+    img_len = len(results)
+    scenario_cls_num = len(classes)
+
+    eval_result = np.zeros((scenario_cls_num, scenario_cls_num)).astype(np.int32)
+    for i in range(img_len):
+        predict = int(results[i])
+        real = int(annotations[i]['scenario'])
+        eval_result[predict][real] += 1
+    
+
+
+    num_cls = len(classes)
+    print_log("\n------------- scenario classify -----------------")
+    gt = 0
+    for i in range(num_cls):
+        gt += eval_result[i][i]
+    precision = gt / img_len
+    print_log(f"correct/total: {gt}/{img_len} = {precision:.3f}")
+
+    head = ['pre\\gt'] + [c for c in classes]
+    table_data = [head]
+    for i in range(num_cls):
+        row_data = [classes[i]] + [f'{eval_result[i][j]}' for j in range(num_cls)]
+        table_data.append(row_data)
+    table = AsciiTable(table_data)
+    print_log('\n' + table.table)

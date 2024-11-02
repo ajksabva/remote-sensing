@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import mmcv
 import numpy as np
-from mmdet.datasets.pipelines import LoadImageFromFile
+from mmdet.datasets.pipelines import LoadImageFromFile, LoadAnnotations
 
 from ..builder import ROTATED_PIPELINES
+
 
 
 @ROTATED_PIPELINES.register_module()
@@ -42,4 +43,17 @@ class LoadPatchFromImage(LoadImageFromFile):
         results['img_shape'] = patch.shape
         results['ori_shape'] = patch.shape
         results['img_fields'] = ['img']
+        return results
+
+@ROTATED_PIPELINES.register_module()
+class LoadAnnotationsWithScenario(LoadAnnotations):
+    def __call__(self, results):
+        results = super(LoadAnnotationsWithScenario, self).__call__(results)
+        results = self._load_img_cls(results)
+        return results
+    
+
+    def _load_img_cls(self, results):
+        ann_info = results['ann_info']
+        results['scenario'] = ann_info['scenario'].copy()
         return results

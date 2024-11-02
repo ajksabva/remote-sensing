@@ -10,9 +10,10 @@ from mmcv import print_log
 import numpy as np
 import torch
 from mmdet.datasets.custom import CustomDataset
+from terminaltables import AsciiTable
 
 from mmrotate.core import obb2poly_np, poly2obb_np
-from mmrotate.core.evaluation import eval_rbbox_map
+from mmrotate.core.evaluation import eval_rbbox_map, eval_scenario
 from .builder import ROTATED_DATASETS
 
 
@@ -20,6 +21,8 @@ from .builder import ROTATED_DATASETS
 class MASATIv2Dataset(CustomDataset):
 
     CLASSES = ('ship',)
+    SCENARIO_CLASSES = ('coast_ship', 'ship', 'coast', 'land', 'water')
+    SCENARIO_CLASSES_FILTER = ('coast_ship', 'ship', 'land')
 
     def __init__(self,
                  ann_file,
@@ -30,12 +33,14 @@ class MASATIv2Dataset(CustomDataset):
                  img_prefix = osp.join('FullDataSet', 'AllImages'),
                  filter_imgs = False,
                  **kwargs):
-        
         self.img_subdir = img_subdir
         self.ann_subdir = ann_subdir
         self.img_prefix = img_prefix
         self.filter_imgs = filter_imgs
         self.version = version
+        if filter_imgs:
+            self.SCENARIO_CLASSES = self.SCENARIO_CLASSES_FILTER
+
         super(MASATIv2Dataset, self).__init__(ann_file, pipeline, **kwargs)
     
     def __len__(self):
@@ -43,18 +48,16 @@ class MASATIv2Dataset(CustomDataset):
     
     def load_annotations(self, ann_file):
         data_infos = []
-        img_ids = mmcv.list_from_file(ann_file)
+        img_ids = mmcv.list_from_file(ann_file)   
 
         for img_id in img_ids:
-            data_info = {}
-
-            
+            data_info = {}       
             filename = osp.join(self.img_subdir, f'{img_id}.bmp')
             data_info['filename'] = filename
             ann_path = osp.join(self.ann_subdir, f'{img_id}.xml')
 
             tree = ET.parse(ann_path)
-            root = tree.getroot()
+            root = tree.getroot()       
 
             width = int(root.find('Img_SizeWidth').text)
             height = int(root.find('Img_SizeHeight').text)
@@ -67,11 +70,13 @@ class MASATIv2Dataset(CustomDataset):
             gt_polygons = []
             
             objs = root.findall('HRSC_Objects/HRSC_Object')
-            if self.filter_imgs and len(objs) == 0:
+            scenario = root.find('Img_Class').text
+            if self.filter_imgs and scenario not in self.SCENARIO_CLASSES:
                 continue
+    
+            scenario = self.scenario_str2int(scenario)
 
             for obj in objs:
-                # class_id = obj.find('Class_ID').text
                 label = 0
                 bbox = np.array([[
                     float(obj.find('mbox_cx').text),
@@ -98,12 +103,14 @@ class MASATIv2Dataset(CustomDataset):
 
             if gt_bboxes:
                 data_info['ann'] = dict(
+                    scenario = np.array(scenario),
                     bboxes = np.array(gt_bboxes, dtype=np.float32),
                     labels = np.array(gt_labels, dtype=np.int64),
                     polygons = np.array(gt_polygons, dtype=np.float32)
                 )
             else:
                 data_info['ann'] = dict(
+                    scenario = np.array(scenario),
                     bboxes = np.zeros((0,5), dtype=np.float32),
                     labels = np.zeros((0,), dtype=np.int64),
                     polygons = np.zeros((0,8), dtype=np.float32)
@@ -128,8 +135,14 @@ class MASATIv2Dataset(CustomDataset):
             nproc=4
     ):
         
+        scenario_results = [r['scenario'] for r in results]
+        results = [r['bbox'] for r in results]
+
         annotations = [self.get_ann_info(i) for i in range(len(self))]
         assert isinstance(iou_thrs, list)
+
+        eval_scenario(scenario_results, annotations, self.SCENARIO_CLASSES)
+
 
         mean_aps = []
         eval_results = OrderedDict()
@@ -149,4 +162,11 @@ class MASATIv2Dataset(CustomDataset):
         eval_results.move_to_end('mAP', last=False)
         return eval_results
             
+    def scenario_str2int(self, str):
+        return self.SCENARIO_CLASSES.index(str)
+    
+    
+
+    
+
 

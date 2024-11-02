@@ -3,7 +3,7 @@ import warnings
 
 import torch
 
-from ..builder import ROTATED_DETECTORS, build_backbone, build_head, build_neck
+from ..builder import ROTATED_DETECTORS, build_backbone, build_head, build_neck, build_img_classifier
 from .base import RotatedBaseDetector
 
 
@@ -18,6 +18,7 @@ class RotatedTwoStageDetector(RotatedBaseDetector):
     def __init__(self,
                  backbone,
                  neck=None,
+                 classifier=None,
                  rpn_head=None,
                  roi_head=None,
                  train_cfg=None,
@@ -33,6 +34,9 @@ class RotatedTwoStageDetector(RotatedBaseDetector):
 
         if neck is not None:
             self.neck = build_neck(neck)
+        
+        if classifier is not None:
+            self.classifier = build_img_classifier(classifier)
 
         if rpn_head is not None:
             rpn_train_cfg = train_cfg.rpn if train_cfg is not None else None
@@ -90,6 +94,7 @@ class RotatedTwoStageDetector(RotatedBaseDetector):
     def forward_train(self,
                       img,
                       img_metas,
+                      scenario,
                       gt_bboxes,
                       gt_labels,
                       gt_bboxes_ignore=None,
@@ -125,9 +130,6 @@ class RotatedTwoStageDetector(RotatedBaseDetector):
             dict[str, Tensor]: a dictionary of loss components
         """
         x = self.extract_feat(img)
-
-        for x_ in x:
-            assert(not x_.isnan().any())
 
         losses = dict()
 
